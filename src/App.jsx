@@ -22,25 +22,32 @@ function App() {
     const API_BASE_URL = 'https://choir-api-live-a9djdxashjhhfzec.canadacentral-01.azurewebsites.net/api/tickets';
 
     // --- STEP 1: Validate Reference Number ---
+  // --- STEP 1: Validate Reference Number ---
     const handleValidate = async (e) => {
         e.preventDefault();
         setIsLoading(true);
         setMessage('');
+        setStatus(null); // Clear previous status
 
-        // Updated Regex: Allows "2026-01", "2026-01 XXD", "2026-120ABC"
-        // 1. Find the clean ticket number anywhere in the messy text
-            const match = ticketNumber.match(/\d{4}-\d{2,3}/);
+        // 1. Find the clean ticket number from your 'reference' state variable
+        const match = reference.match(/\d{4}-\d{2,3}/);
 
-            if (!match) {
-                setError("Invalid format. Must contain a valid 2026 ticket number.");
-                return;
-            }
+        if (!match) {
+            // Use your actual state setters for errors!
+            setStatus('error');
+            setMessage("Invalid format. Must contain a valid 2026 ticket number.");
+            setIsLoading(false); // Don't forget to turn off the loading state here!
+            return;
+        }
 
-            // 2. Extract the clean number (e.g., "2026-01")
-            const cleanTicket = match[0];
+        // 2. Extract the clean number (e.g., "2026-01")
+        const cleanTicket = match[0];
+        
+        // Overwrite the messy input so Step 2 uses the clean ticket!
+        setReference(cleanTicket); 
 
         try {
-            const response = await fetch(`${API_BASE_URL}/validate/${reference.trim()}`);
+            const response = await fetch(`${API_BASE_URL}/validate/${cleanTicket}`);
             const data = await response.json();
 
             if (response.ok) {
