@@ -28,14 +28,16 @@ function App() {
         setMessage('');
 
         // Updated Regex: Allows "2026-01", "2026-01 XXD", "2026-120ABC"
-        const isValidFormat = /^2026-\d{2,3}(?:\s*[a-zA-Z]+)?$/.test(reference.trim());
-        
-        if (!isValidFormat) {
-            setStatus('error');
-            setMessage("Invalid format. Must start with 2026- followed by your ticket number.");
-            setIsLoading(false);
-            return;
-        }
+        // 1. Find the clean ticket number anywhere in the messy text
+            const match = ticketNumber.match(/\d{4}-\d{2,3}/);
+
+            if (!match) {
+                setError("Invalid format. Must contain a valid 2026 ticket number.");
+                return;
+            }
+
+            // 2. Extract the clean number (e.g., "2026-01")
+            const cleanTicket = match[0];
 
         try {
             const response = await fetch(`${API_BASE_URL}/validate/${reference.trim()}`);
